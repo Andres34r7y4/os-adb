@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Reporte de seguridad
+    url: https://github.com/Andres34r7y4/os-adb/security/advisories/new
+    about: No abras issues públicos para vulnerabilidades. Ver SECURITY.md.
+  - name: 💬 Pregunta / discusión
+    url: https://github.com/Andres34r7y4/os-adb/discussions
+    about: Dudas de uso, arquitectura o conectores.

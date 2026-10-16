@@ -206,14 +206,15 @@ class HelpScreen(ModalScreen):
 
     CSS = """
     HelpScreen { align: center middle; }
-    #help-dialog { width: 84; height: 90%; padding: 1 2; background: $surface; border: round $secondary; }
-    #help-scroll { height: 1fr; text-align: center; }
+    #help-dialog { width: 84; height: 90%; padding: 1 2; background: $surface; border: round $secondary; align: center middle; }
+    #help-scroll { height: 1fr; align: center middle; }
+    #help-inner { width: auto; height: auto; }
     #help-close { height: auto; align: center middle; margin-top: 1; }
     .help-logo { color: $primary; text-align: center; }
     .help-socials { color: $secondary; margin: 1 0 0 0; text-align: center; }
     .help-tagline { color: $text-muted; text-style: italic; margin: 0 0 1 0; text-align: center; }
     .help-h { color: $secondary; text-style: bold; margin-top: 1; text-align: center; }
-    .help-body { text-align: center; }
+    .help-body { width: auto; text-align: center; }
     """
 
     BINDINGS = [
@@ -224,27 +225,28 @@ class HelpScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         with Vertical(id="help-dialog"):
             with VerticalScroll(id="help-scroll"):
-                yield Label(BANNER, classes="help-logo")
-                yield Label(SOCIALS, classes="help-socials")
-                yield Label(f'“{TAGLINE}”', classes="help-tagline")
-                yield Label(" ⌨ Atajos", classes="help-h")
-                yield Static(
-                    "  [bold $accent]n[/]  nueva decisión (modal con validación)\n"
-                    "  [bold $accent]d[/]  eliminar seleccionada (pide confirmación)\n"
-                    "  [bold $accent]/[/]  foco en filtro · [bold $accent]enter[/] ver detalle\n"
-                    "  [bold $accent]p[/]  publicar seleccionada (conector activo)\n"
-                    "  [bold $accent]c[/]  configuración (db, exports, conectores)\n"
-                    "  [bold $accent]e[/]  exportar ADR_LOG.md · [bold $accent]r[/] refrescar\n"
-                    "  [bold $accent]q[/]  salir · [bold $accent]?[/] esta ayuda",
-                    classes="help-body",
-                )
-                yield Label(" ◈ Ritual sugerido", classes="help-h")
-                yield Static(
-                    "  1. Pulsa [bold]n[/] cuando tomes una decisión (2 segundos, sin salir del flow)\n"
-                    "  2. Usa [bold]/[/] para encontrarla meses después\n"
-                    "  3. [bold]e[/] para versionarla en git · [bold]p[/] para llevarla a Notion/Slack",
-                    classes="help-body",
-                )
+                with Vertical(id="help-inner"):
+                    yield Label(BANNER, classes="help-logo")
+                    yield Label(SOCIALS, classes="help-socials")
+                    yield Label(f'“{TAGLINE}”', classes="help-tagline")
+                    yield Label(" ⌨ Atajos", classes="help-h")
+                    yield Static(
+                        "[bold $accent]n[/] nueva decisión (modal con validación)\n"
+                        "[bold $accent]d[/] eliminar seleccionada (pide confirmación)\n"
+                        "[bold $accent]/[/] foco en filtro · [bold $accent]enter[/] ver detalle\n"
+                        "[bold $accent]p[/] publicar seleccionada (conector activo)\n"
+                        "[bold $accent]c[/] configuración (db, exports, conectores)\n"
+                        "[bold $accent]e[/] exportar ADR_LOG.md · [bold $accent]r[/] refrescar\n"
+                        "[bold $accent]q[/] salir · [bold $accent]?[/] esta ayuda",
+                        classes="help-body",
+                    )
+                    yield Label(" ◈ Ritual sugerido", classes="help-h")
+                    yield Static(
+                        "1. Pulsa [bold]n[/] cuando tomes una decisión (2 segundos, sin salir del flow)\n"
+                        "2. Usa [bold]/[/] para encontrarla meses después\n"
+                        "3. [bold]e[/] para versionarla en git · [bold]p[/] para llevarla a Notion/Slack",
+                        classes="help-body",
+                    )
             with Horizontal(id="help-close"):
                 yield Button("Close", variant="primary", id="help-ok")
 

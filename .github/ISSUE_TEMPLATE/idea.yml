@@ -1,0 +1,43 @@
+name: 💡 Idea / mejora
+description: Propón una mejora (ver docs/ideas-para-contribuir.md)
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema que resuelve
+      placeholder: "Hoy tengo que… y me cuesta…"
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      placeholder: "Un comando `adb ...` que… / una tecla … que…"
+    validations:
+      required: true
+  - type: dropdown
+    id: capas
+    attributes:
+      label: Capa(s) afectadas (Strict Layered)
+      multiple: true
+      options:
+        - UI (CLI/TUI)
+        - Engine (casos de uso, settings, context)
+        - Domain (entidades, puertos)
+        - Adapters (storage, publishers)
+        - Docs / demos
+  - type: dropdown
+    id: nivel
+    attributes:
+      label: Nivel estimado
+      options:
+        - "🟢 Fácil"
+        - "🟡 Intermedio"
+        - "🔴 Avanzado"
+  - type: checkboxes
+    id: contrib
+    attributes:
+      label: Contribución
+      options:
+        - label: Quiero implementarla yo (asígname el issue)

@@ -84,11 +84,21 @@ def svg_to_frame(svg: str) -> Image.Image:
 
 def save_gif(frames: list, durations: list, out: Path) -> None:
     assert len(frames) == len(durations)
-    frames[0].save(
-        out, save_all=True, append_images=frames[1:],
+    base_w, base_h = frames[0].size
+    bg = (26, 27, 38)  # tokyo-night background
+    normalized = []
+    for frame in frames:
+        if frame.size == (base_w, base_h):
+            normalized.append(frame)
+            continue
+        canvas = Image.new("RGB", (base_w, base_h), bg)
+        canvas.paste(frame, ((base_w - frame.width) // 2, (base_h - frame.height) // 2))
+        normalized.append(canvas)
+    normalized[0].save(
+        out, save_all=True, append_images=normalized[1:],
         duration=durations, loop=0, optimize=True,
     )
-    print(f"wrote {out} ({out.stat().st_size // 1024} KB, {len(frames)} frames)")
+    print(f"wrote {out} ({out.stat().st_size // 1024} KB, {len(normalized)} frames)")
 
 
 # -- GIF 1: CLI -------------------------------------------------------------
@@ -113,30 +123,30 @@ def build_cli_gif(out: Path) -> None:
 
     # typing effect for the add command
     cmd = 'adb add --title "Use SQLite per Module" -j "Zero ops, git-friendly" --tag architecture'
-    for i in range(4, len(cmd) + 1, 9):
+    for i in range(4, len(cmd) + 1, 7):
         c = fresh_console()
         c.print(f"[bold green]$[/] {cmd[:i]}[blink]▌[/]")
-        snap(c, 90)
+        snap(c, 130)
     c = fresh_console()
     c.print(f"[bold green]$[/] {cmd}")
     cli_mod.console = c
     cli_mod.add_decision(title="Use SQLite per Module", justification="Zero ops, git-friendly.",
                          context="Need offline-first persistence.", tag="architecture")
-    snap(c, 1400)
+    snap(c, 2400)
 
     # list
     c = fresh_console()
     c.print("[bold green]$[/] adb list")
     cli_mod.console = c
     cli_mod.list_decisions()
-    snap(c, 1800)
+    snap(c, 2600)
 
     # export
     c = fresh_console()
     c.print("[bold green]$[/] adb export")
     cli_mod.console = c
     cli_mod.export_adr(os.path.join(tmp, "ADR_LOG.md"))
-    snap(c, 1400)
+    snap(c, 2200)
 
     cli_mod.console = real_console
     save_gif(frames, durations, out)
@@ -191,30 +201,32 @@ def build_tour_gif(out: Path) -> None:
                                 "Zero ops, git-friendly. Trade-off: no concurrent writes.", "architecture")
             svc.record_decision("Typer + Rich for CLI", "CLI must be instant.",
                                 "Typing + tables. Trade-off: extra deps.", "dx")
-            await shot(app, pilot, 1600, frames, durations)          # home
+            await shot(app, pilot, 2200, frames, durations)          # home
             await pilot.press("b")
-            await shot(app, pilot, 1400, frames, durations)          # buffer
+            await shot(app, pilot, 2000, frames, durations)          # buffer
             await pilot.press("n")
             await pilot.pause()
             screen = app.screen
             screen.query_one("#f-title", Input).value = "Textual TUI inspector"
             screen.query_one("#f-context", Input).value = "Inspect without leaving the terminal."
             screen.query_one("#f-justification", Input).value = "Single codebase. Trade-off: learning curve."
-            await shot(app, pilot, 1400, frames, durations)          # modal filled
+            await shot(app, pilot, 2000, frames, durations)          # modal filled
             await pilot.click("#btn-save")
-            await shot(app, pilot, 1400, frames, durations)          # saved toast
+            await shot(app, pilot, 2200, frames, durations)          # saved toast
             assert isinstance(app.screen, BufferScreen)
             await pilot.press("/")
             await pilot.pause()
-            await pilot.press(*list("arch"))
-            await shot(app, pilot, 1400, frames, durations)          # live filter
+            for letter in "arch":  # live filter, letter by letter
+                await pilot.press(letter)
+                await shot(app, pilot, 450, frames, durations)
+            await shot(app, pilot, 1800, frames, durations)          # filtered hold
             await pilot.press("escape")  # back home (clears search focus first if needed)
             await pilot.pause()
             if not isinstance(app.screen, HomeScreen):
                 await pilot.press("escape")
                 await pilot.pause()
             await pilot.press("?")
-            await shot(app, pilot, 1800, frames, durations)          # help
+            await shot(app, pilot, 2600, frames, durations)          # help
         return frames, durations
 
     frames, durations = asyncio.run(scenario())
@@ -237,14 +249,16 @@ def build_connectors_gif(out: Path) -> None:
         app = ADBTuiApp()
         async with app.run_test(size=(WIDTH, HEIGHT)) as pilot:
             assert isinstance(app.screen, HomeScreen)
-            await shot(app, pilot, 1400, frames, durations)          # home
-            await pilot.press("c")
+            await shot(app, pilot, 2200, frames, durations)          # home
+            from ui.dialogs import ConfigScreen
+
+            await app.push_screen(ConfigScreen())
             await pilot.pause()
             screen = app.screen
             screen.query_one("#cfg-publisher", Input).value = "n8n"
             screen.query_one("#cfg-webhook", Input).value = hook
             screen.query_one("#cfg-enabled", Checkbox).value = True
-            await shot(app, pilot, 1400, frames, durations)          # config filled
+            await shot(app, pilot, 2200, frames, durations)          # config filled
             await pilot.click("#cfg-test")
             found = False
             for _ in range(40):  # wait for the background worker
@@ -258,12 +272,53 @@ def build_connectors_gif(out: Path) -> None:
                     break
             assert found, "connector Test did not succeed against the stub"
             screen.query_one("#cfg-scroll").scroll_end(animate=False)
-            await shot(app, pilot, 2000, frames, durations)          # ✔ result
+            await shot(app, pilot, 2600, frames, durations)          # ✔ result
             server.shutdown()
         return frames, durations
 
     frames, durations = asyncio.run(scenario())
+    frames.append(svg_to_frame(slack_mockup_svg()))
+    durations.append(3200)  # hold the Slack preview
     save_gif(frames, durations, out)
+
+
+def slack_mockup_svg() -> str:
+    """Slack-style preview of a published ADR (mockup ilustrativo)."""
+    from rich.console import Console
+    from rich.layout import Layout
+    from rich.panel import Panel
+    from rich.text import Text
+
+    console = Console(record=True, width=100, height=15)
+    side = Text("\n  os-adb demo\n\n  # general\n  # architecture\n  # incidents\n  # engineering\n", style="white on #3F0E40")
+    msg = Text()
+    msg.append("⬢ OS-ADB APP", style="bold white on #1A1D21")
+    msg.append("  10:24 AM\n", style="#7a7a7a on #1A1D21")
+    msg.append("📜 [ADR-A1B2C3] Use SQLite per Module\n", style="bold white on #1A1D21")
+    msg.append("#architecture · 2026-10-16\n", style="#7a7a7a on #1A1D21")
+    msg.append("Eliminates cross-domain coupling and enables fast local migrations.\n", style="white on #1A1D21")
+    msg.append("Trade-off: no concurrent writes at scale.\n", style="#bbbbbb on #1A1D21")
+    msg.append("💡 Context: Need offline-first local persistence, zero ops.\n\n", style="white on #1A1D21")
+    msg.append("  Ver ADR  ", style="black on bright_green")
+    msg.append("  ", style="on #1A1D21")
+    msg.append("  Abrir en Notion  ", style="black on bright_blue")
+    msg.append("  🔖 registrado con os-adb", style="#7a7a7a on #1A1D21")
+    layout = Layout()
+    layout.split_row(
+        Layout(Panel(side, border_style="#3F0E40", style="on #3F0E40"), ratio=1, name="side"),
+        Layout(
+            Panel(
+                msg,
+                title="[bold white on #1A1D21]#architecture[/]  [dim](mockup ilustrativo)[/]",
+                border_style="#444444",
+                style="on #1A1D21",
+            ),
+            ratio=3,
+            name="msg",
+        ),
+    )
+    console.print(layout)
+    return console.export_svg(title="Slack · #architecture (mockup)")
 
 
 def main() -> None:
@@ -281,6 +336,9 @@ def main() -> None:
             continue
         print(f"== {name} ==")
         fn(out)
+    mockup_png = DEMO_DIR / "04-slack-mockup.png"
+    svg_to_frame(slack_mockup_svg()).save(mockup_png)
+    print(f"wrote {mockup_png} ({mockup_png.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":

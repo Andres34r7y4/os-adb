@@ -25,6 +25,10 @@
 |---|---|---|
 | ![CLI demo](docs/demo/01-cli-2segundos.gif) | ![TUI tour](docs/demo/02-tui-tour.gif) | ![Connectors](docs/demo/03-connectors.gif) |
 
+Así llega un ADR a Slack (mockup ilustrativo):
+
+![Slack mockup](docs/demo/04-slack-mockup.png)
+
 > Regenerables con `python docs/demo/generate_gifs.py` (headless, determinista).
 
 ```bash
@@ -190,6 +194,12 @@ adb publish ADR-A1B2C3             # o `adb add ... --publish`, o tecla `p` en T
 - [x] ORM SQLAlchemy + puertos + settings TOML + 3 conectores funcionales (n8n/slack/notion)
 - [ ] Adapter Postgres + `export --format json`
 - [ ] `adb edit` / tags múltiples
+
+## 🙌 Comunidad y seguridad
+
+- **Contribuir:** lee [`CONTRIBUTING.md`](CONTRIBUTING.md) y elige una idea en [`docs/ideas-para-contribuir.md`](docs/ideas-para-contribuir.md) (niveles 🟢🟡🔴).
+- **Conducta:** [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+- **Seguridad:** reportes privados según [`SECURITY.md`](SECURITY.md) (no abras issues públicos).
 
 ## 👤 Autor
 
