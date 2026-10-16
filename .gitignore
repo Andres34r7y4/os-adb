@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.db
+*.log
+.venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+ADR_LOG.md
+adr_buffer.db
+.DS_Store
