@@ -1,0 +1,35 @@
+name: 🐞 Bug report
+description: Reporta un error reproducible
+labels: [bug]
+body:
+  - type: textarea
+    id: que
+    attributes:
+      label: ¿Qué pasó?
+      description: Comportamiento observado vs. esperado
+      placeholder: "`adb publish` falla con… esperaba…"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Pasos para reproducir
+      placeholder: "1. `adb seed`\n2. `adb publish ADR-XXX`\n3. …"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión / commit
+      placeholder: "main @ <sha> o tag v0.x"
+  - type: textarea
+    id: entorno
+    attributes:
+      label: Entorno
+      placeholder: "SO, Python (`python3 --version`), terminal"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs relevantes
+      description: Pega salida con traceback. Tacha secretos (tokens, URLs con claves).
+      render: shell
